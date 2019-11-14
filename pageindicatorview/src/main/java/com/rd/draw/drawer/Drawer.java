@@ -3,6 +3,8 @@ package com.rd.draw.drawer;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.rd.animation.data.Value;
 import com.rd.draw.data.Indicator;
 import com.rd.draw.drawer.type.*;
@@ -19,12 +21,15 @@ public class Drawer {
     private DropDrawer dropDrawer;
     private SwapDrawer swapDrawer;
     private ScaleDownDrawer scaleDownDrawer;
+    private UnselectedScaledDrawer unselectedScaledDrawer;
+    private UnselectedDrawer unselectedDrawer;
 
     private int position;
     private int coordinateX;
     private int coordinateY;
 
-    public Drawer(@NonNull Indicator indicator) {
+    public Drawer(@NonNull Indicator indicator,
+                  @NonNull ScaleCommon scaleCommon) {
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
@@ -39,6 +44,8 @@ public class Drawer {
         dropDrawer = new DropDrawer(paint, indicator);
         swapDrawer = new SwapDrawer(paint, indicator);
         scaleDownDrawer = new ScaleDownDrawer(paint, indicator);
+        unselectedScaledDrawer = new UnselectedScaledDrawer(paint, indicator, scaleCommon);
+        unselectedDrawer = new UnselectedDrawer(paint, indicator);
     }
 
     public void setup(int position, int coordinateX, int coordinateY) {
@@ -105,5 +112,13 @@ public class Drawer {
         if (scaleDownDrawer != null) {
             scaleDownDrawer.draw(canvas, value, position, coordinateX, coordinateY);
         }
+    }
+
+    public void drawUnselectedScale(@NonNull Canvas canvas, @NonNull Value value) {
+        unselectedScaledDrawer.draw(canvas, position, coordinateX, coordinateY, value);
+    }
+
+    public void drawUnselected(@NonNull Canvas canvas, @Nullable Value value) {
+        unselectedDrawer.draw(canvas, position, coordinateX, coordinateY, value);
     }
 }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.rd.animation.data.Value;
 import com.rd.animation.type.*;
+import com.rd.draw.drawer.type.ScaleCommon;
 
 public class ValueController {
 

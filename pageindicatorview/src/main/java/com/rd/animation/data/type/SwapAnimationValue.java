@@ -2,7 +2,7 @@ package com.rd.animation.data.type;
 
 import com.rd.animation.data.Value;
 
-public class SwapAnimationValue implements Value {
+public class SwapAnimationValue extends Value {
 
     private int coordinate;
     private int coordinateReverse;

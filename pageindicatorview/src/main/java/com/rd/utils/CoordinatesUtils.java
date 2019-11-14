@@ -1,11 +1,15 @@
 package com.rd.utils;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.util.Pair;
+
 import com.rd.animation.type.AnimationType;
 import com.rd.draw.data.Indicator;
 import com.rd.draw.data.Orientation;
+
+import static java.lang.Math.abs;
 
 public class CoordinatesUtils {
 
@@ -22,11 +26,35 @@ public class CoordinatesUtils {
 		}
 	}
 
-	@SuppressWarnings("UnnecessaryLocalVariable")
-	public static int getXCoordinate(@Nullable Indicator indicator, int position) {
-		if (indicator == null) {
-			return 0;
-		}
+    public static int getYTranslation(@Nullable Indicator indicator, int toSelectedPosition) {
+        if (indicator == null || indicator.getOrientation() == Orientation.HORIZONTAL) {
+            return 0;
+        }
+        int oldOffset = indicator.isInteractiveAnimation() ? indicator.getSelectionOffset() :
+                indicator.getLastSelectionOffset();
+        int newOffset = indicator.isInteractiveAnimation() ? indicator.getNextSelectionOffset(toSelectedPosition) :
+                indicator.getSelectionOffset();
+        int nextPositionWithoutOffset = getYCoordinate(indicator, toSelectedPosition - oldOffset);
+        return getYCoordinate(indicator, toSelectedPosition - newOffset) - nextPositionWithoutOffset;
+    }
+
+    public static int getXTranslation(@Nullable Indicator indicator, int toSelectedPosition) {
+        if (indicator == null || indicator.getOrientation() == Orientation.VERTICAL) {
+            return 0;
+        }
+        int oldOffset = indicator.isInteractiveAnimation() ? indicator.getSelectionOffset() :
+                indicator.getLastSelectionOffset();
+        int newOffset = indicator.isInteractiveAnimation() ? indicator.getNextSelectionOffset(toSelectedPosition) :
+                indicator.getSelectionOffset();
+        int nextPositionWithoutOffset = getXCoordinate(indicator, toSelectedPosition - oldOffset);
+        return getXCoordinate(indicator, toSelectedPosition - newOffset) - nextPositionWithoutOffset;
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    public static int getXCoordinate(@Nullable Indicator indicator, int position) {
+        if (indicator == null) {
+            return 0;
+        }
 
 		int coordinate;
 		if (indicator.getOrientation() == Orientation.HORIZONTAL) {
@@ -76,13 +104,13 @@ public class CoordinatesUtils {
 	}
 
 	private static int getFitPosition(@NonNull Indicator indicator, float lengthCoordinate, float heightCoordinate) {
-		int count = indicator.getCount();
+		int count = indicator.getDisplayedCount();
 		int radius = indicator.getRadius();
 		int stroke = indicator.getStroke();
 		int padding = indicator.getPadding();
 
 		int height = indicator.getOrientation() == Orientation.HORIZONTAL ? indicator.getHeight() : indicator.getWidth();
-		int length = 0;
+		int length = getFirstItemCoordinate(indicator) - radius - stroke / 2;
 
 		for (int i = 0; i < count; i++) {
 			int indicatorPadding = i > 0 ? padding : padding / 2;
@@ -94,33 +122,31 @@ public class CoordinatesUtils {
 			boolean fitLength = lengthCoordinate >= startValue && lengthCoordinate <= endValue;
 			boolean fitHeight = heightCoordinate >= 0 && heightCoordinate <= height;
 
-			if (fitLength && fitHeight) {
-				return i;
-			}
-		}
+            if (fitLength && fitHeight) {
+                return i + indicator.getSelectionOffset();
+            }
+        }
 
-		return -1;
-	}
+        return -1;
+    }
 
-	private static int getHorizontalCoordinate(@NonNull Indicator indicator, int position) {
-		int count = indicator.getCount();
-		int radius = indicator.getRadius();
-		int stroke = indicator.getStroke();
-		int padding = indicator.getPadding();
+    private static int getFirstItemCoordinate(@NonNull Indicator indicator) {
+	    if (indicator.getDisplayedCount() < indicator.getCount()) {
+	        return 3 * indicator.getRadius() + indicator.getPadding() + 3 * indicator.getStroke() / 2;
+        } else {
+	        return indicator.getRadius() + (indicator.getStroke() / 2);
+        }
+    }
 
-		int coordinate = 0;
-		for (int i = 0; i < count; i++) {
-			coordinate += radius + (stroke / 2);
+    private static int getHorizontalCoordinate(@NonNull Indicator indicator, int position) {
+        int radius = indicator.getRadius();
+        int stroke = indicator.getStroke();
+        int padding = indicator.getPadding();
 
-			if (position == i) {
-				return coordinate;
-			}
-
-			coordinate += radius + padding + (stroke / 2);
-		}
-
-		if (indicator.getAnimationType() == AnimationType.DROP) {
-			coordinate += radius * 2;
+		int sign = Integer.signum(position);
+		int coordinate = getFirstItemCoordinate(indicator);
+		for (int i = 0; i < abs(position); i++) {
+			coordinate += sign * (2 * radius + padding + stroke);
 		}
 
 		return coordinate;
@@ -154,16 +180,9 @@ public class CoordinatesUtils {
 			position = count - 1;
 		}
 
-		boolean isRightOverScrolled = position > selectedPosition;
-		boolean isLeftOverScrolled;
+		boolean isOverscrolled = Math.abs(position - selectedPosition) > 1;
 
-		if (isRtl) {
-			isLeftOverScrolled = position - 1 < selectedPosition;
-		} else {
-			isLeftOverScrolled = position + 1 < selectedPosition;
-		}
-
-		if (isRightOverScrolled || isLeftOverScrolled) {
+		if (isOverscrolled) {
 			selectedPosition = position;
 			indicator.setSelectedPosition(selectedPosition);
 		}

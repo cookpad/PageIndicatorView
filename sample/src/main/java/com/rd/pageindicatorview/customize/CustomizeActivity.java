@@ -85,6 +85,10 @@ public class CustomizeActivity extends BaseActivity implements AdapterView.OnIte
             case R.id.switchUseViewPager2:
                 customization.setUseViewPager2(isChecked);
                 break;
+
+            case R.id.switchShowLessIndicators:
+                customization.setShowLessIndicators(isChecked);
+                break;
         }
     }
 
@@ -128,6 +132,10 @@ public class CustomizeActivity extends BaseActivity implements AdapterView.OnIte
         Switch switchUseViewPager2 = findViewById(R.id.switchUseViewPager2);
         switchUseViewPager2.setOnCheckedChangeListener(this);
         switchUseViewPager2.setChecked(customization.isUseViewPager2());
+
+        Switch switchShowLessIndicators = findViewById(R.id.switchShowLessIndicators);
+        switchShowLessIndicators.setOnCheckedChangeListener(this);
+        switchShowLessIndicators.setChecked(customization.isShowLessIndicators());
 
     }
 

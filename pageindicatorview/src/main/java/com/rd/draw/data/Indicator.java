@@ -1,7 +1,9 @@
 package com.rd.draw.data;
 
-import androidx.annotation.NonNull;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+
 import com.rd.animation.type.AnimationType;
 
 public class Indicator {
@@ -40,10 +42,13 @@ public class Indicator {
 
     private long animationDuration;
     private int count = DEFAULT_COUNT;
+    private int displayedCount = COUNT_NONE;
 
     private int selectedPosition;
     private int selectingPosition;
     private int lastSelectedPosition;
+    private int selectionOffset;
+    private int lastSelectionOffset;
 
     private int viewPagerId = View.NO_ID;
 
@@ -148,7 +153,7 @@ public class Indicator {
     }
 
     public boolean isInteractiveAnimation() {
-        return interactiveAnimation;
+        return interactiveAnimation || displayedCount != COUNT_NONE;
     }
 
     public void setInteractiveAnimation(boolean interactiveAnimation) {
@@ -211,11 +216,24 @@ public class Indicator {
         this.count = count;
     }
 
+    public int getDisplayedCount() {
+        return this.displayedCount != Indicator.COUNT_NONE && displayedCount < count
+                ? this.displayedCount : this.count;
+    }
+
+    public void setDisplayedCount(int displayedCount) {
+        this.displayedCount = displayedCount;
+        this.lastSelectionOffset = selectionOffset;
+        this.selectionOffset = getNextSelectionOffset(selectedPosition);
+    }
+
     public int getSelectedPosition() {
         return selectedPosition;
     }
 
     public void setSelectedPosition(int selectedPosition) {
+        this.lastSelectionOffset = selectionOffset;
+        this.selectionOffset = getNextSelectionOffset(selectedPosition);
         this.selectedPosition = selectedPosition;
     }
 
@@ -233,6 +251,10 @@ public class Indicator {
 
     public void setLastSelectedPosition(int lastSelectedPosition) {
         this.lastSelectedPosition = lastSelectedPosition;
+    }
+
+    public int getSelectionOffset() {
+        return selectionOffset;
     }
 
     public int getViewPagerId() {
@@ -277,5 +299,33 @@ public class Indicator {
 
     public void setRtlMode(RtlMode rtlMode) {
         this.rtlMode = rtlMode;
+    }
+
+    public int getLastSelectionOffset() {
+        return lastSelectionOffset;
+    }
+
+    public int getNextSelectionOffset(int nextSelectedPosition) {
+        if (displayedCount == 1) {
+            return 0;
+        }
+        if (displayedCount == 2) {
+            return nextSelectedPosition > lastSelectedPosition
+                    ? nextSelectedPosition - 1 : nextSelectedPosition;
+        }
+        if (nextSelectedPosition == 0) {
+            return 0;
+        }
+        if (nextSelectedPosition >= getCount() - 1) {
+            return getCount() - getDisplayedCount();
+        }
+        int positionOnScreen = nextSelectedPosition - selectionOffset;
+        if (positionOnScreen <= 0) {
+            return nextSelectedPosition - 1;
+        }
+        if (positionOnScreen >= getDisplayedCount() - 2) {
+            return nextSelectedPosition - getDisplayedCount() + 2;
+        }
+        return selectionOffset;
     }
 }

@@ -1,8 +1,6 @@
 package com.rd.animation.data.type;
 
-import com.rd.animation.data.Value;
-
-public class FillAnimationValue extends ColorAnimationValue implements Value {
+public class FillAnimationValue extends ColorAnimationValue {
 
     private int radius;
     private int radiusReverse;

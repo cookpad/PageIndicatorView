@@ -17,6 +17,10 @@ public class MeasureController {
         int heightSize = View.MeasureSpec.getSize(heightMeasureSpec);
 
         int count = indicator.getCount();
+        int displayedCount = indicator.getDisplayedCount();
+        if (displayedCount < count) {
+            displayedCount += 2;
+        }
         int radius = indicator.getRadius();
         int stroke = indicator.getStroke();
 
@@ -34,11 +38,11 @@ public class MeasureController {
         int height;
 
         Orientation orientation = indicator.getOrientation();
-        if (count != 0) {
-            int diameterSum = circleDiameterPx * count;
-            int strokeSum = (stroke * 2) * count;
+        if (displayedCount != 0) {
+            int diameterSum = circleDiameterPx * displayedCount;
+            int strokeSum = (stroke * 2) * displayedCount;
 
-            int paddingSum = padding * (count - 1);
+            int paddingSum = padding * (displayedCount - 1);
             int w = diameterSum + strokeSum + paddingSum;
             int h = circleDiameterPx + stroke;
 
