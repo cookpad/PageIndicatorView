@@ -9,19 +9,26 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.text.TextUtilsCompat;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.core.view.ViewCompat;
-import androidx.viewpager.widget.ViewPager;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import com.rd.animation.type.*;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.text.TextUtilsCompat;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.rd.animation.type.AnimationType;
+import com.rd.animation.type.BaseAnimation;
+import com.rd.animation.type.FillAnimation;
+import com.rd.animation.type.ScaleAnimation;
 import com.rd.draw.controller.DrawController;
 import com.rd.draw.data.Indicator;
 import com.rd.draw.data.Orientation;
@@ -37,8 +44,11 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
 
     private IndicatorManager manager;
     private DataSetObserver setObserver;
+    private RecyclerView.AdapterDataObserver setObserver2;
     private ViewPager viewPager;
+    private ViewPager2 viewPager2;
     private boolean isInteractionEnabled;
+    private ViewPager2.OnPageChangeCallback viewpager2Callback;
 
     public PageIndicatorView(Context context) {
         super(context);
@@ -530,6 +540,28 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     /**
+     * Set {@link ViewPager2} to add {@link ViewPager2.OnPageChangeCallback} and automatically
+     * handle selecting new indicators (and interactive animation effect if it is enabled).
+     *
+     * @param pager2 instance of {@link ViewPager2} to work with
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    public void setViewPager(@Nullable ViewPager2 pager2) {
+        releaseViewPager();
+        if (pager2 == null) {
+            return;
+        }
+
+        viewPager2 = pager2;
+        viewPager2.registerOnPageChangeCallback(viewpager2Callback);
+        viewPager2.setOnTouchListener(this);
+        manager.indicator().setViewPagerId(viewPager2.getId());
+
+        setDynamicCount(manager.indicator().isDynamicCount());
+        updateState();
+    }
+
+    /**
      * Release {@link ViewPager} and stop handling events of {@link ViewPager.OnPageChangeListener}.
      */
     public void releaseViewPager() {
@@ -537,6 +569,11 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
             viewPager.removeOnPageChangeListener(this);
             viewPager.removeOnAdapterChangeListener(this);
             viewPager = null;
+        }
+        if (viewPager2 != null) {
+            viewPager2.unregisterOnPageChangeCallback(viewpager2Callback);
+            unRegisterSetObserver2();
+            viewPager2 = null;
         }
     }
 
@@ -556,7 +593,7 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
             indicator.setRtlMode(mode);
         }
 
-        if (viewPager == null) {
+        if (viewPager == null && viewPager2 == null) {
             return;
         }
 
@@ -568,6 +605,8 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
 
         } else if (viewPager != null) {
             position = viewPager.getCurrentItem();
+        } else if (viewPager2 != null) {
+            position = viewPager2.getCurrentItem();
         }
 
         indicator.setLastSelectedPosition(position);
@@ -673,6 +712,17 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     private void init(@Nullable AttributeSet attrs) {
+        viewpager2Callback = new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                PageIndicatorView.this.onPageScroll(position, positionOffset);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                PageIndicatorView.this.onPageSelected(position);
+            }
+        };
         setupId();
         initIndicatorManager(attrs);
 
@@ -700,10 +750,15 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     private void registerSetObserver() {
-        if (setObserver != null || viewPager == null || viewPager.getAdapter() == null) {
-            return;
+        if (viewPager != null) {
+            registerSetObserverNon2();
+        } else if (viewPager2 != null) {
+            registerSetObserver2();
         }
+    }
 
+    private void registerSetObserverNon2() {
+        if (setObserver != null || viewPager.getAdapter() == null) return;
         setObserver = new DataSetObserver() {
             @Override
             public void onChanged() {
@@ -718,8 +773,56 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
         }
     }
 
+    private void registerSetObserver2() {
+        if (setObserver2 != null || viewPager2.getAdapter() == null) return;
+        setObserver2 = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                updateState();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                updateState();
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
+                updateState();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                updateState();
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                updateState();
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                updateState();
+            }
+        };
+        try {
+            viewPager2.getAdapter().registerAdapterDataObserver(setObserver2);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void unRegisterSetObserver() {
-        if (setObserver == null || viewPager == null || viewPager.getAdapter() == null) {
+        if (viewPager != null) {
+            unRegisterSetObserverNon2();
+        } else if (viewPager2 != null) {
+            unRegisterSetObserver2();
+        }
+    }
+
+    private void unRegisterSetObserverNon2() {
+        if (setObserver == null || viewPager.getAdapter() == null) {
             return;
         }
 
@@ -731,13 +834,36 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
         }
     }
 
-    private void updateState() {
-        if (viewPager == null || viewPager.getAdapter() == null) {
+    private void unRegisterSetObserver2() {
+        if (setObserver2 == null || viewPager2.getAdapter() == null) {
             return;
         }
 
-        int count = viewPager.getAdapter().getCount();
-        int selectedPos = isRtl() ? (count - 1) - viewPager.getCurrentItem() : viewPager.getCurrentItem();
+        try {
+            viewPager2.getAdapter().unregisterAdapterDataObserver(setObserver2);
+            setObserver2 = null;
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateState() {
+        int currentItem = 0;
+        int count = -1;
+        if (viewPager != null) {
+            currentItem = viewPager.getCurrentItem();
+            if (viewPager.getAdapter() != null) {
+                count = viewPager.getAdapter().getCount();
+            }
+        } else if (viewPager2 != null) {
+            currentItem = viewPager2.getCurrentItem();
+            if (viewPager2.getAdapter() != null) {
+                count = viewPager2.getAdapter().getItemCount();
+            }
+        }
+        if (count < 0) return;
+
+        int selectedPos = isRtl() ? (count - 1) - currentItem : currentItem;
 
         manager.indicator().setSelectedPosition(selectedPos);
         manager.indicator().setSelectingPosition(selectedPos);
@@ -824,26 +950,14 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
         }
 
         int viewPagerId = manager.indicator().getViewPagerId();
-        ViewPager viewPager = findViewPager((ViewGroup) viewParent, viewPagerId);
+        View viewPager = ((ViewGroup) viewParent).findViewById(viewPagerId);
 
-        if (viewPager != null) {
-            setViewPager(viewPager);
+        if (viewPager instanceof ViewPager) {
+            setViewPager((ViewPager) viewPager);
+        } else if (viewPager instanceof ViewPager2) {
+            setViewPager((ViewPager2) viewPager);
         } else {
             findViewPager(viewParent.getParent());
-        }
-    }
-
-    @Nullable
-    private ViewPager findViewPager(@NonNull ViewGroup viewGroup, int id) {
-        if (viewGroup.getChildCount() <= 0) {
-            return null;
-        }
-
-        View view = viewGroup.findViewById(id);
-        if (view != null && view instanceof ViewPager) {
-            return (ViewPager) view;
-        } else {
-            return null;
         }
     }
 

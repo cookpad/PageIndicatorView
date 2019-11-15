@@ -23,9 +23,14 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/toolbar" />
 
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar" />
+
     <com.rd.PageIndicatorView
         android:id="@+id/pageIndicatorView"
-        app:piv_viewPager="@id/viewPager"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

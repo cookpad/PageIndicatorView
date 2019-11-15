@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,7 @@ public class HomeActivity extends BaseActivity {
 
         initToolbar();
         initViews();
+        updateIndicator();
     }
 
     @Override
@@ -67,16 +70,36 @@ public class HomeActivity extends BaseActivity {
         final ViewPager pager = findViewById(R.id.viewPager);
         pager.setAdapter(adapter);
 
+        HomeAdapter2 adapter2 = new HomeAdapter2();
+        adapter2.setData(createPageListInt());
+
+        final ViewPager2 pager2 = findViewById(R.id.viewPager2);
+        pager2.setAdapter(adapter2);
+
         pageIndicatorView = findViewById(R.id.pageIndicatorView);
     }
 
-    @NonNull
     private List<View> createPageList() {
-        List<View> pageList = new ArrayList<>();
-        pageList.add(createPageView(R.color.google_red));
-        pageList.add(createPageView(R.color.google_blue));
-        pageList.add(createPageView(R.color.google_yellow));
-        pageList.add(createPageView(R.color.google_green));
+        ArrayList<View> result = new ArrayList<>();
+        for (int color : createPageListInt()) {
+            result.add(createPageView(color));
+        }
+        return result;
+    }
+
+    @NonNull
+    private List<Integer> createPageListInt() {
+        List<Integer> pageList = new ArrayList<>();
+        pageList.add(R.color.google_red);
+        pageList.add(R.color.google_blue);
+        pageList.add(R.color.google_yellow);
+        pageList.add(R.color.google_green);
+        pageList.add(R.color.black);
+        pageList.add(R.color.green_600);
+        pageList.add(R.color.gray_300);
+        pageList.add(R.color.red_800);
+        pageList.add(R.color.blue_100);
+        pageList.add(R.color.gray_800);
 
         return pageList;
     }
@@ -100,5 +123,16 @@ public class HomeActivity extends BaseActivity {
         pageIndicatorView.setInteractiveAnimation(customization.isInteractiveAnimation());
         pageIndicatorView.setAutoVisibility(customization.isAutoVisibility());
         pageIndicatorView.setFadeOnIdle(customization.isFadeOnIdle());
+        ViewPager viewPager = findViewById(R.id.viewPager);
+        ViewPager2 viewPager2 = findViewById(R.id.viewPager2);
+        if (customization.isUseViewPager2()) {
+            viewPager.setVisibility(View.GONE);
+            viewPager2.setVisibility(View.VISIBLE);
+            pageIndicatorView.setViewPager(viewPager2);
+        } else {
+            viewPager.setVisibility(View.VISIBLE);
+            viewPager2.setVisibility(View.GONE);
+            pageIndicatorView.setViewPager(viewPager);
+        }
     }
 }

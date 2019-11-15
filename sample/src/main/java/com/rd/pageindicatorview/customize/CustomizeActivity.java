@@ -81,6 +81,10 @@ public class CustomizeActivity extends BaseActivity implements AdapterView.OnIte
             case R.id.switchFadeOnIdle:
                 customization.setFadeOnIdle(isChecked);
                 break;
+
+            case R.id.switchUseViewPager2:
+                customization.setUseViewPager2(isChecked);
+                break;
         }
     }
 
@@ -120,6 +124,10 @@ public class CustomizeActivity extends BaseActivity implements AdapterView.OnIte
         Switch switchFadeOnIdle = findViewById(R.id.switchFadeOnIdle);
         switchFadeOnIdle.setOnCheckedChangeListener(this);
         switchFadeOnIdle.setChecked(customization.isFadeOnIdle());
+
+        Switch switchUseViewPager2 = findViewById(R.id.switchUseViewPager2);
+        switchUseViewPager2.setOnCheckedChangeListener(this);
+        switchUseViewPager2.setChecked(customization.isUseViewPager2());
 
     }
 

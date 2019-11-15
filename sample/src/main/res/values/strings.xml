@@ -8,6 +8,7 @@
     <string name="home">Home</string>
     <string name="right_to_left_mode">Right to left mode</string>
     <string name="fade_on_idle">Fade on idle</string>
+    <string name="use_view_pager_2">Use ViewPager2</string>
 
     <string-array name="animation_type">
         <item>None</item>
