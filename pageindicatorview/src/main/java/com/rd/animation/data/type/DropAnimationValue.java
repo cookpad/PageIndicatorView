@@ -2,7 +2,7 @@ package com.rd.animation.data.type;
 
 import com.rd.animation.data.Value;
 
-public class DropAnimationValue implements Value {
+public class DropAnimationValue extends Value {
 
     private int width;
     private int height;

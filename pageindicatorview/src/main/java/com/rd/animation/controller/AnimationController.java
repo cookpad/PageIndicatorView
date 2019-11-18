@@ -5,6 +5,7 @@ import com.rd.animation.type.AnimationType;
 import com.rd.animation.type.BaseAnimation;
 import com.rd.draw.data.Indicator;
 import com.rd.draw.data.Orientation;
+import com.rd.draw.drawer.type.ScaleCommon;
 import com.rd.utils.CoordinatesUtils;
 
 public class AnimationController {
@@ -14,14 +15,18 @@ public class AnimationController {
 
     private BaseAnimation runningAnimation;
     private Indicator indicator;
+    private ScaleCommon scaleCommon;
 
     private float progress;
     private boolean isInteractive;
 
-    public AnimationController(@NonNull Indicator indicator, @NonNull ValueController.UpdateListener listener) {
+    public AnimationController(@NonNull Indicator indicator,
+                               @NonNull ValueController.UpdateListener listener,
+                               @NonNull ScaleCommon scaleCommon) {
         this.valueController = new ValueController(listener);
         this.listener = listener;
         this.indicator = indicator;
+        this.scaleCommon = scaleCommon;
     }
 
     public void interactive(float progress) {
@@ -110,12 +115,18 @@ public class AnimationController {
         int selectedColor = indicator.getSelectedColor();
         int unselectedColor = indicator.getUnselectedColor();
         int radiusPx = indicator.getRadius();
-        float scaleFactor = indicator.getScaleFactor();
         long animationDuration = indicator.getAnimationDuration();
+
+        int selectingPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
+        int deselectingPosition = indicator.isInteractiveAnimation()? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
 
         BaseAnimation animation = valueController
                 .scale()
-                .with(unselectedColor, selectedColor, radiusPx, scaleFactor)
+                .with(unselectedColor,
+                        selectedColor,
+                        radiusPx,
+                        scaleCommon.getMinRadius(selectingPosition, indicator),
+                        scaleCommon.getMinRadius(deselectingPosition, indicator))
                 .duration(animationDuration);
 
         if (isInteractive) {
@@ -128,19 +139,15 @@ public class AnimationController {
     }
 
     private void wormAnimation() {
-        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
-        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
-
-        int from = CoordinatesUtils.getCoordinate(indicator, fromPosition);
-        int to = CoordinatesUtils.getCoordinate(indicator, toPosition);
-        boolean isRightSide = toPosition > fromPosition;
+        int from = CoordinatesUtils.getCoordinate(indicator, getFromPositionDisplayed(indicator));
+        int to = CoordinatesUtils.getCoordinate(indicator, getToPositionDisplayed(indicator));
 
         int radiusPx = indicator.getRadius();
         long animationDuration = indicator.getAnimationDuration();
 
         BaseAnimation animation = valueController
                 .worm()
-                .with(from, to, radiusPx, isRightSide)
+                .with(from, to, radiusPx, isRightSide(indicator))
                 .duration(animationDuration);
 
         if (isInteractive) {
@@ -153,11 +160,8 @@ public class AnimationController {
     }
 
     private void slideAnimation() {
-        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
-        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
-
-        int from = CoordinatesUtils.getCoordinate(indicator, fromPosition);
-        int to = CoordinatesUtils.getCoordinate(indicator, toPosition);
+        int from = CoordinatesUtils.getCoordinate(indicator, getFromPositionDisplayed(indicator));
+        int to = CoordinatesUtils.getCoordinate(indicator, getToPositionDisplayed(indicator));
         long animationDuration = indicator.getAnimationDuration();
 
         BaseAnimation animation = valueController
@@ -196,19 +200,15 @@ public class AnimationController {
     }
 
     private void thinWormAnimation() {
-        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
-        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
-
-        int from = CoordinatesUtils.getCoordinate(indicator, fromPosition);
-        int to = CoordinatesUtils.getCoordinate(indicator, toPosition);
-        boolean isRightSide = toPosition > fromPosition;
+        int from = CoordinatesUtils.getCoordinate(indicator, getFromPositionDisplayed(indicator));
+        int to = CoordinatesUtils.getCoordinate(indicator, getToPositionDisplayed(indicator));
 
         int radiusPx = indicator.getRadius();
         long animationDuration = indicator.getAnimationDuration();
 
         BaseAnimation animation = valueController
                 .thinWorm()
-                .with(from, to, radiusPx, isRightSide)
+                .with(from, to, radiusPx, isRightSide(indicator))
                 .duration(animationDuration);
 
         if (isInteractive) {
@@ -221,11 +221,8 @@ public class AnimationController {
     }
 
     private void dropAnimation() {
-        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
-        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
-
-        int widthFrom = CoordinatesUtils.getCoordinate(indicator, fromPosition);
-        int widthTo = CoordinatesUtils.getCoordinate(indicator, toPosition);
+        int widthFrom = CoordinatesUtils.getCoordinate(indicator, getFromPositionDisplayed(indicator));
+        int widthTo = CoordinatesUtils.getCoordinate(indicator, getToPositionDisplayed(indicator));
 
         int paddingTop = indicator.getPaddingTop();
         int paddingLeft = indicator.getPaddingLeft();
@@ -252,11 +249,8 @@ public class AnimationController {
     }
 
     private void swapAnimation() {
-        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
-        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
-
-        int from = CoordinatesUtils.getCoordinate(indicator, fromPosition);
-        int to = CoordinatesUtils.getCoordinate(indicator, toPosition);
+        int from = CoordinatesUtils.getCoordinate(indicator, getFromPositionDisplayed(indicator));
+        int to = CoordinatesUtils.getCoordinate(indicator, getToPositionDisplayed(indicator));
         long animationDuration = indicator.getAnimationDuration();
 
         BaseAnimation animation = valueController
@@ -292,6 +286,24 @@ public class AnimationController {
         }
 
         runningAnimation = animation;
+    }
+
+    private boolean isRightSide(@NonNull Indicator indicator) {
+        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
+        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
+        return toPosition > fromPosition;
+    }
+
+    private int getFromPositionDisplayed(@NonNull Indicator indicator) {
+        int fromPosition = indicator.isInteractiveAnimation() ? indicator.getSelectedPosition() : indicator.getLastSelectedPosition();
+        int fromOffset = indicator.isInteractiveAnimation() ? indicator.getSelectionOffset() : indicator.getLastSelectionOffset();
+        return fromPosition - fromOffset;
+    }
+
+    private int getToPositionDisplayed(@NonNull Indicator indicator) {
+        int toPosition = indicator.isInteractiveAnimation() ? indicator.getSelectingPosition() : indicator.getSelectedPosition();
+        int toOffset = indicator.getSelectionOffset();
+        return toPosition - toOffset;
     }
 }
 

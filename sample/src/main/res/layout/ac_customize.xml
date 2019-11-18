@@ -163,6 +163,20 @@
                 android:text="@string/use_view_pager_2"
                 android:textColor="@color/gray_700"
                 android:textSize="16sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200" />
+            <Switch
+                android:id="@+id/switchShowLessIndicators"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/selector_black_10_transparent"
+                android:padding="16dp"
+                android:text="@string/show_less_indicators"
+                android:textColor="@color/gray_700"
+                android:textSize="16sp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

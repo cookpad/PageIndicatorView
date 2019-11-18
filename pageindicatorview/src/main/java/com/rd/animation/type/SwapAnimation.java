@@ -8,7 +8,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import com.rd.animation.controller.ValueController;
 import com.rd.animation.data.type.SwapAnimationValue;
 
-public class SwapAnimation extends BaseAnimation<ValueAnimator> {
+public class SwapAnimation extends BaseAnimation<ValueAnimator, SwapAnimationValue> {
 
     private static final String ANIMATION_COORDINATE = "ANIMATION_COORDINATE";
     private static final String ANIMATION_COORDINATE_REVERSE = "ANIMATION_COORDINATE_REVERSE";
@@ -17,11 +17,14 @@ public class SwapAnimation extends BaseAnimation<ValueAnimator> {
     private int coordinateStart = COORDINATE_NONE;
     private int coordinateEnd = COORDINATE_NONE;
 
-    private SwapAnimationValue value;
-
     public SwapAnimation(@NonNull ValueController.UpdateListener listener) {
         super(listener);
-        value = new SwapAnimationValue();
+    }
+
+    @NonNull
+    @Override
+    protected SwapAnimationValue createValue() {
+        return new SwapAnimationValue();
     }
 
     @NonNull
@@ -41,7 +44,7 @@ public class SwapAnimation extends BaseAnimation<ValueAnimator> {
     }
 
     @Override
-    public SwapAnimation progress(float progress) {
+    public void onProgress(float progress) {
         if (animator != null) {
             long playTime = (long) (progress * animationDuration);
 
@@ -49,8 +52,6 @@ public class SwapAnimation extends BaseAnimation<ValueAnimator> {
                 animator.setCurrentPlayTime(playTime);
             }
         }
-
-        return this;
     }
 
     @NonNull
@@ -77,7 +78,7 @@ public class SwapAnimation extends BaseAnimation<ValueAnimator> {
     private void onAnimateUpdated(@NonNull ValueAnimator animation) {
         int coordinate = (int) animation.getAnimatedValue(ANIMATION_COORDINATE);
         int coordinateReverse = (int) animation.getAnimatedValue(ANIMATION_COORDINATE_REVERSE);
-
+        SwapAnimationValue value = getValue();
         value.setCoordinate(coordinate);
         value.setCoordinateReverse(coordinateReverse);
 

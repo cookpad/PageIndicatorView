@@ -8,7 +8,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import com.rd.animation.controller.ValueController;
 import com.rd.animation.data.type.ScaleAnimationValue;
 
-public class ScaleAnimation extends ColorAnimation {
+public class ScaleAnimation extends BaseColorAnimation<ScaleAnimationValue> {
 
     public static final float DEFAULT_SCALE_FACTOR = 0.7f;
     public static final float MIN_SCALE_FACTOR = 0.3f;
@@ -17,14 +17,18 @@ public class ScaleAnimation extends ColorAnimation {
     static final String ANIMATION_SCALE_REVERSE = "ANIMATION_SCALE_REVERSE";
     static final String ANIMATION_SCALE = "ANIMATION_SCALE";
 
-    int radius;
-    float scaleFactor;
-
-    private ScaleAnimationValue value;
+    int selectedRadius;
+    int selectingStartRadius;
+    int deselectingEndRadius;
 
     public ScaleAnimation(@NonNull ValueController.UpdateListener listener) {
         super(listener);
-        value = new ScaleAnimationValue();
+    }
+
+    @NonNull
+    @Override
+    protected ScaleAnimationValue createValue() {
+        return new ScaleAnimationValue();
     }
 
     @NonNull
@@ -44,20 +48,25 @@ public class ScaleAnimation extends ColorAnimation {
     }
 
     @NonNull
-    public ScaleAnimation with(int colorStart, int colorEnd, int radius, float scaleFactor) {
-        if (animator != null && hasChanges(colorStart, colorEnd, radius, scaleFactor)) {
+    public ScaleAnimation with(int colorStart,
+                               int colorEnd,
+                               int selectedRadius,
+                               int selectingStartRadius,
+                               int deselectingEndRadius) {
+        if (animator != null && hasChanges(colorStart, colorEnd, selectedRadius, selectingStartRadius, deselectingEndRadius)) {
 
             this.colorStart = colorStart;
             this.colorEnd = colorEnd;
 
-            this.radius = radius;
-            this.scaleFactor = scaleFactor;
+            this.selectedRadius = selectedRadius;
+            this.selectingStartRadius = selectingStartRadius;
+            this.deselectingEndRadius = deselectingEndRadius;
 
             PropertyValuesHolder colorHolder = createColorPropertyHolder(false);
             PropertyValuesHolder reverseColorHolder = createColorPropertyHolder(true);
 
-            PropertyValuesHolder scaleHolder = createScalePropertyHolder(false);
-            PropertyValuesHolder scaleReverseHolder = createScalePropertyHolder(true);
+            PropertyValuesHolder scaleHolder = createScalePropertyHolder(selectingStartRadius, selectedRadius);
+            PropertyValuesHolder scaleReverseHolder = createScalePropertyHolder(selectedRadius, deselectingEndRadius);
 
             animator.setValues(colorHolder, reverseColorHolder, scaleHolder, scaleReverseHolder);
         }
@@ -72,6 +81,7 @@ public class ScaleAnimation extends ColorAnimation {
         int radius = (int) animation.getAnimatedValue(ANIMATION_SCALE);
         int radiusReverse = (int) animation.getAnimatedValue(ANIMATION_SCALE_REVERSE);
 
+        ScaleAnimationValue value = getValue();
         value.setColor(color);
         value.setColorReverse(colorReverse);
 
@@ -84,29 +94,16 @@ public class ScaleAnimation extends ColorAnimation {
     }
 
     @NonNull
-    protected PropertyValuesHolder createScalePropertyHolder(boolean isReverse) {
-        String propertyName;
-        int startRadiusValue;
-        int endRadiusValue;
-
-        if (isReverse) {
-            propertyName = ANIMATION_SCALE_REVERSE;
-            startRadiusValue = radius;
-            endRadiusValue = (int) (radius * scaleFactor);
-        } else {
-            propertyName = ANIMATION_SCALE;
-            startRadiusValue = (int) (radius * scaleFactor);
-            endRadiusValue = radius;
-        }
-
-        PropertyValuesHolder holder = PropertyValuesHolder.ofInt(propertyName, startRadiusValue, endRadiusValue);
+    protected PropertyValuesHolder createScalePropertyHolder(int startRadius, int endRadius) {
+        String propertyName = startRadius < endRadius ? ANIMATION_SCALE : ANIMATION_SCALE_REVERSE;
+        PropertyValuesHolder holder = PropertyValuesHolder.ofInt(propertyName, startRadius, endRadius);
         holder.setEvaluator(new IntEvaluator());
 
         return holder;
     }
 
     @SuppressWarnings("RedundantIfStatement")
-    private boolean hasChanges(int colorStart, int colorEnd, int radiusValue, float scaleFactorValue) {
+    private boolean hasChanges(int colorStart, int colorEnd, int selectedRadiusValue, int selectingStartRadiusValue, int deselectingEndRadiusValue) {
         if (this.colorStart != colorStart) {
             return true;
         }
@@ -115,11 +112,14 @@ public class ScaleAnimation extends ColorAnimation {
             return true;
         }
 
-        if (radius != radiusValue) {
+        if (selectedRadius != selectedRadiusValue) {
             return true;
         }
 
-        if (scaleFactor != scaleFactorValue) {
+        if (selectingStartRadius != selectingStartRadiusValue) {
+            return true;
+        }
+        if (deselectingEndRadius != deselectingEndRadiusValue) {
             return true;
         }
 

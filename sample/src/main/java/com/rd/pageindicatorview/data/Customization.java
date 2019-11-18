@@ -17,6 +17,7 @@ public class Customization implements Parcelable {
     private boolean autoVisibility = true;
     private boolean fadeOnIdle = false;
     private boolean useViewPager2 = true;
+    private boolean showLessIndicators = false;
 
     public AnimationType getAnimationType() {
         return animationType;
@@ -74,6 +75,14 @@ public class Customization implements Parcelable {
         this.useViewPager2 = useViewPager2;
     }
 
+    public boolean isShowLessIndicators() {
+        return showLessIndicators;
+    }
+
+    public void setShowLessIndicators(boolean showLessIndicators) {
+        this.showLessIndicators = showLessIndicators;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,6 +96,7 @@ public class Customization implements Parcelable {
         if (orientation != that.orientation) return false;
         if (fadeOnIdle != that.fadeOnIdle) return false;
         if (useViewPager2 != that.useViewPager2) return false;
+        if (showLessIndicators != that.showLessIndicators) return false;
         return rtlMode == that.rtlMode;
 
     }
@@ -100,6 +110,7 @@ public class Customization implements Parcelable {
         result = 31 * result + (autoVisibility ? 1 : 0);
         result = 31 * result + (fadeOnIdle ? 1 : 0);
         result = 31 * result + (useViewPager2 ? 1 : 0);
+        result = 31 * result + (showLessIndicators ? 1 : 0);
         return result;
     }
 
@@ -117,6 +128,7 @@ public class Customization implements Parcelable {
         dest.writeByte(this.autoVisibility ? (byte) 1 : (byte) 0);
         dest.writeByte(this.fadeOnIdle ? (byte) 1 : (byte) 0);
         dest.writeByte(this.useViewPager2 ? (byte) 1 : (byte) 0);
+        dest.writeByte(this.showLessIndicators ? (byte) 1 : (byte) 0);
     }
 
     public Customization() {
@@ -133,6 +145,7 @@ public class Customization implements Parcelable {
         this.autoVisibility = in.readByte() != 0;
         this.fadeOnIdle = in.readByte() != 0;
         this.useViewPager2 = in.readByte() != 0;
+        this.showLessIndicators = in.readByte() != 0;
     }
 
     public static final Parcelable.Creator<Customization> CREATOR = new Parcelable.Creator<Customization>() {

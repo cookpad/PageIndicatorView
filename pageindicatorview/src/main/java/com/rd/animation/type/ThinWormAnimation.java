@@ -1,18 +1,22 @@
 package com.rd.animation.type;
 
+import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import androidx.annotation.NonNull;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import com.rd.animation.controller.ValueController;
 import com.rd.animation.data.type.ThinWormAnimationValue;
 
-public class ThinWormAnimation extends WormAnimation {
-
-    private ThinWormAnimationValue value;
+public class ThinWormAnimation extends BaseWormAnimation<ThinWormAnimationValue> {
 
     public ThinWormAnimation(@NonNull ValueController.UpdateListener listener) {
         super(listener);
-        value = new ThinWormAnimationValue();
+    }
+
+    @NonNull
+    @Override
+    protected ThinWormAnimationValue createValue() {
+        return new ThinWormAnimationValue();
     }
 
     @Override
@@ -22,7 +26,8 @@ public class ThinWormAnimation extends WormAnimation {
     }
 
     @Override
-    public WormAnimation with(int coordinateStart, int coordinateEnd, int radius, boolean isRightSide) {
+    public BaseWormAnimation with(int coordinateStart, int coordinateEnd, int radius, boolean isRightSide) {
+        ThinWormAnimationValue value = getValue();
         if (hasChanges(coordinateStart, coordinateEnd, radius, isRightSide)) {
             animator = createAnimator();
 
@@ -75,6 +80,7 @@ public class ThinWormAnimation extends WormAnimation {
     }
 
     private void onAnimateUpdated(@NonNull ValueAnimator animation) {
+        ThinWormAnimationValue value = getValue();
         value.setHeight((int) animation.getAnimatedValue());
 
         if (listener != null) {
@@ -83,7 +89,7 @@ public class ThinWormAnimation extends WormAnimation {
     }
 
     @Override
-    public ThinWormAnimation progress(float progress) {
+    public void onProgress(float progress) {
         if (animator != null) {
             long progressDuration = (long) (progress * animationDuration);
             int size = animator.getChildAnimations().size();
@@ -110,7 +116,5 @@ public class ThinWormAnimation extends WormAnimation {
                 }
             }
         }
-
-        return this;
     }
 }

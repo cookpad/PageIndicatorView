@@ -8,7 +8,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import com.rd.animation.controller.ValueController;
 import com.rd.animation.data.type.FillAnimationValue;
 
-public class FillAnimation extends ColorAnimation {
+public class FillAnimation extends BaseColorAnimation<FillAnimationValue> {
 
     private static final String ANIMATION_RADIUS_REVERSE = "ANIMATION_RADIUS_REVERSE";
     private static final String ANIMATION_RADIUS = "ANIMATION_RADIUS";
@@ -17,14 +17,18 @@ public class FillAnimation extends ColorAnimation {
     private static final String ANIMATION_STROKE = "ANIMATION_STROKE";
 
     public static final int DEFAULT_STROKE_DP = 1;
-    private FillAnimationValue value;
 
     private int radius;
     private int stroke;
 
     public FillAnimation(@NonNull ValueController.UpdateListener listener) {
         super(listener);
-        value = new FillAnimationValue();
+    }
+
+    @NonNull
+    @Override
+    protected FillAnimationValue createValue() {
+        return new FillAnimationValue();
     }
 
     @NonNull
@@ -121,6 +125,7 @@ public class FillAnimation extends ColorAnimation {
     }
 
     private void onAnimateUpdated(@NonNull ValueAnimator animation) {
+        FillAnimationValue value = getValue();
         int color = (int) animation.getAnimatedValue(ANIMATION_COLOR);
         int colorReverse = (int) animation.getAnimatedValue(ANIMATION_COLOR_REVERSE);
 

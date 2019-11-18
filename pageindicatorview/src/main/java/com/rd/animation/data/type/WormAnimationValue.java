@@ -2,7 +2,7 @@ package com.rd.animation.data.type;
 
 import com.rd.animation.data.Value;
 
-public class WormAnimationValue implements Value {
+public class WormAnimationValue extends Value {
 
     private int rectStart;
     private int rectEnd;

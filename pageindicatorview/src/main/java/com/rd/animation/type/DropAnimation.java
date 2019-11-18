@@ -8,7 +8,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import com.rd.animation.controller.ValueController;
 import com.rd.animation.data.type.DropAnimationValue;
 
-public class DropAnimation extends BaseAnimation<AnimatorSet> {
+public class DropAnimation extends BaseAnimation<AnimatorSet, DropAnimationValue> {
 
     private int widthStart;
     private int widthEnd;
@@ -18,11 +18,14 @@ public class DropAnimation extends BaseAnimation<AnimatorSet> {
 
     private enum AnimationType {Width, Height, Radius}
 
-    private DropAnimationValue value;
-
     public DropAnimation(@NonNull ValueController.UpdateListener listener) {
         super(listener);
-        value = new DropAnimationValue();
+    }
+
+    @NonNull
+    @Override
+    protected DropAnimationValue createValue() {
+        return new DropAnimationValue();
     }
 
     @NonNull
@@ -35,7 +38,7 @@ public class DropAnimation extends BaseAnimation<AnimatorSet> {
     }
 
     @Override
-    public DropAnimation progress(float progress) {
+    public void onProgress(float progress) {
         if (animator != null) {
             long playTimeLeft = (long) (progress * animationDuration);
             boolean isReverse = false;
@@ -65,8 +68,6 @@ public class DropAnimation extends BaseAnimation<AnimatorSet> {
                 }
             }
         }
-
-        return this;
     }
 
     @Override
@@ -123,6 +124,7 @@ public class DropAnimation extends BaseAnimation<AnimatorSet> {
 
     private void onAnimatorUpdate(@NonNull ValueAnimator animation, @NonNull AnimationType type) {
         int frameValue = (int) animation.getAnimatedValue();
+        DropAnimationValue value = getValue();
 
         switch (type) {
             case Width:

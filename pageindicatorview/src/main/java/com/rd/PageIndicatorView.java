@@ -27,6 +27,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.rd.animation.type.AnimationType;
 import com.rd.animation.type.BaseAnimation;
+import com.rd.animation.type.BaseColorAnimation;
 import com.rd.animation.type.FillAnimation;
 import com.rd.animation.type.ScaleAnimation;
 import com.rd.draw.controller.DrawController;
@@ -34,6 +35,7 @@ import com.rd.draw.data.Indicator;
 import com.rd.draw.data.Orientation;
 import com.rd.draw.data.PositionSavedState;
 import com.rd.draw.data.RtlMode;
+import com.rd.draw.drawer.type.ScaleCommon;
 import com.rd.utils.CoordinatesUtils;
 import com.rd.utils.DensityUtils;
 import com.rd.utils.IdUtils;
@@ -178,9 +180,9 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     /**
-     * Set static number of circle indicators to be displayed.
+     * Set number of items this indicator represents
      *
-     * @param count total count of indicators.
+     * @param count total count item this view represents
      */
     public void setCount(int count) {
         if (count >= 0 && manager.indicator().getCount() != count) {
@@ -191,10 +193,33 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     /**
-     * Return number of circle indicators
+     * Set maximum number of circle indicators to be displayed. If the number of displayed indicators
+     * is less that the number of items being displayed then a special transition animation will run
+     * when scrolled to one of the ends.
+     * Use {@link Indicator#COUNT_NONE} to specify that number of indicator must match the number of
+     * items this View represents.
+     * Setting this parameter will automatically enable interactive animation.
+     *
+     * @param displayedCount number of indicators
+     */
+    public void setMaxDisplayedCount(int displayedCount) {
+        manager.indicator().setDisplayedCount(displayedCount);
+        updateVisibility();
+        requestLayout();
+    }
+
+    /**
+     * Return number of items this view represents
      */
     public int getCount() {
         return manager.indicator().getCount();
+    }
+
+    /**
+     * Return the number if indicators this view displays
+     */
+    public int getDisplayedCount() {
+        return manager.indicator().getDisplayedCount();
     }
 
     /**
@@ -389,7 +414,7 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     /**
-     * Set color of selected state to circle indicator. Default color is {@link ColorAnimation#DEFAULT_SELECTED_COLOR}.
+     * Set color of selected state to circle indicator. Default color is {@link BaseColorAnimation#DEFAULT_SELECTED_COLOR}.
      *
      * @param color color selected circle.
      */
@@ -400,14 +425,14 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
 
     /**
      * Return color of selected circle indicator. If custom unselected color
-     * is not set, return default color {@link ColorAnimation#DEFAULT_SELECTED_COLOR}.
+     * is not set, return default color {@link BaseColorAnimation#DEFAULT_SELECTED_COLOR}.
      */
     public int getSelectedColor() {
         return manager.indicator().getSelectedColor();
     }
 
     /**
-     * Set color of unselected state to each circle indicator. Default color {@link ColorAnimation#DEFAULT_UNSELECTED_COLOR}.
+     * Set color of unselected state to each circle indicator. Default color {@link BaseColorAnimation#DEFAULT_UNSELECTED_COLOR}.
      *
      * @param color color of each unselected circle.
      */
@@ -418,7 +443,7 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
 
     /**
      * Return color of unselected state of each circle indicator. If custom unselected color
-     * is not set, return default color {@link ColorAnimation#DEFAULT_UNSELECTED_COLOR}.
+     * is not set, return default color {@link BaseColorAnimation#DEFAULT_UNSELECTED_COLOR}.
      */
     public int getUnselectedColor() {
         return manager.indicator().getUnselectedColor();
@@ -738,7 +763,7 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
     }
 
     private void initIndicatorManager(@Nullable AttributeSet attrs) {
-        manager = new IndicatorManager(this);
+        manager = new IndicatorManager(this, new ScaleCommon());
         manager.drawer().initAttributes(getContext(), attrs);
 
         Indicator indicator = manager.indicator();
@@ -880,7 +905,7 @@ public class PageIndicatorView extends View implements ViewPager.OnPageChangeLis
             return;
         }
 
-        int count = manager.indicator().getCount();
+        int count = manager.indicator().getDisplayedCount();
         int visibility = getVisibility();
 
         if (visibility != VISIBLE && count > Indicator.MIN_COUNT) {

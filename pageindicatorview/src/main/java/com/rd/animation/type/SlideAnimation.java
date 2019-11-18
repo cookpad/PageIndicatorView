@@ -8,18 +8,21 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import com.rd.animation.controller.ValueController;
 import com.rd.animation.data.type.SlideAnimationValue;
 
-public class SlideAnimation extends BaseAnimation<ValueAnimator> {
-
+public class SlideAnimation extends BaseAnimation<ValueAnimator, SlideAnimationValue> {
     private static final String ANIMATION_COORDINATE = "ANIMATION_COORDINATE";
     private static final int COORDINATE_NONE = -1;
 
-    private SlideAnimationValue value;
     private int coordinateStart = COORDINATE_NONE;
     private int coordinateEnd = COORDINATE_NONE;
 
     public SlideAnimation(@NonNull ValueController.UpdateListener listener) {
         super(listener);
-        value = new SlideAnimationValue();
+    }
+
+    @NonNull
+    @Override
+    protected SlideAnimationValue createValue() {
+        return new SlideAnimationValue();
     }
 
     @NonNull
@@ -39,7 +42,7 @@ public class SlideAnimation extends BaseAnimation<ValueAnimator> {
     }
 
     @Override
-    public SlideAnimation progress(float progress) {
+    public void onProgress(float progress) {
         if (animator != null) {
             long playTime = (long) (progress * animationDuration);
 
@@ -47,8 +50,6 @@ public class SlideAnimation extends BaseAnimation<ValueAnimator> {
                 animator.setCurrentPlayTime(playTime);
             }
         }
-
-        return this;
     }
 
     @NonNull
@@ -74,6 +75,7 @@ public class SlideAnimation extends BaseAnimation<ValueAnimator> {
 
     private void onAnimateUpdated(@NonNull ValueAnimator animation) {
         int coordinate = (int) animation.getAnimatedValue(ANIMATION_COORDINATE);
+        SlideAnimationValue value = getValue();
         value.setCoordinate(coordinate);
 
         if (listener != null) {

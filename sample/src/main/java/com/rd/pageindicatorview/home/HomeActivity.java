@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import com.rd.PageIndicatorView;
+import com.rd.draw.data.Indicator;
 import com.rd.pageindicatorview.base.BaseActivity;
 import com.rd.pageindicatorview.customize.CustomizeActivity;
 import com.rd.pageindicatorview.data.Customization;
@@ -134,5 +135,6 @@ public class HomeActivity extends BaseActivity {
             viewPager2.setVisibility(View.GONE);
             pageIndicatorView.setViewPager(viewPager);
         }
+        pageIndicatorView.setMaxDisplayedCount(customization.isShowLessIndicators() ? 5 : Indicator.COUNT_NONE);
     }
 }

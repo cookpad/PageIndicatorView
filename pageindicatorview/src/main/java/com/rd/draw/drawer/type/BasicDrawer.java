@@ -2,7 +2,9 @@ package com.rd.draw.drawer.type;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+
 import androidx.annotation.NonNull;
+
 import com.rd.animation.type.AnimationType;
 import com.rd.draw.data.Indicator;
 
@@ -35,12 +37,9 @@ public class BasicDrawer extends BaseDrawer {
         int selectedPosition = indicator.getSelectedPosition();
         AnimationType animationType = indicator.getAnimationType();
 
-		if (animationType == AnimationType.SCALE && !isSelectedItem) {
-			radius *= scaleFactor;
-
-		} else if (animationType == AnimationType.SCALE_DOWN && isSelectedItem) {
-			radius *= scaleFactor;
-		}
+		if (animationType == AnimationType.SCALE_DOWN && isSelectedItem) {
+            radius *= scaleFactor;
+        }
 
         int color = unselectedColor;
         if (position == selectedPosition) {

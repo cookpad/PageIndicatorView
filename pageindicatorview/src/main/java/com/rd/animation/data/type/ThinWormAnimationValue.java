@@ -1,8 +1,6 @@
 package com.rd.animation.data.type;
 
-import com.rd.animation.data.Value;
-
-public class ThinWormAnimationValue extends WormAnimationValue implements Value {
+public class ThinWormAnimationValue extends WormAnimationValue {
 
     private int height;
 

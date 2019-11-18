@@ -12,6 +12,7 @@ import com.rd.draw.controller.AttributeController;
 import com.rd.draw.controller.DrawController;
 import com.rd.draw.controller.MeasureController;
 import com.rd.draw.data.Indicator;
+import com.rd.draw.drawer.type.ScaleCommon;
 
 public class DrawManager {
 
@@ -20,9 +21,9 @@ public class DrawManager {
 	private MeasureController measureController;
 	private AttributeController attributeController;
 
-	public DrawManager() {
+	public DrawManager(@NonNull ScaleCommon scaleCommon) {
 		this.indicator = new Indicator();
-		this.drawController = new DrawController(indicator);
+		this.drawController = new DrawController(indicator, scaleCommon);
 		this.measureController = new MeasureController();
 		this.attributeController = new AttributeController(indicator);
 	}

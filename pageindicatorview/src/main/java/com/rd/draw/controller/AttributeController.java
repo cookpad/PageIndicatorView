@@ -10,7 +10,7 @@ import android.view.View;
 
 import com.rd.animation.type.AnimationType;
 import com.rd.animation.type.BaseAnimation;
-import com.rd.animation.type.ColorAnimation;
+import com.rd.animation.type.BaseColorAnimation;
 import com.rd.animation.type.FillAnimation;
 import com.rd.animation.type.ScaleAnimation;
 import com.rd.draw.data.Indicator;
@@ -43,6 +43,7 @@ public class AttributeController {
         boolean autoVisibility = typedArray.getBoolean(R.styleable.PageIndicatorView_piv_autoVisibility, true);
         boolean dynamicCount = typedArray.getBoolean(R.styleable.PageIndicatorView_piv_dynamicCount, false);
         int count = typedArray.getInt(R.styleable.PageIndicatorView_piv_count, Indicator.COUNT_NONE);
+        int displayedCount = typedArray.getInt(R.styleable.PageIndicatorView_piv_display_count, Indicator.COUNT_NONE);
 
         if (count == Indicator.COUNT_NONE) {
             count = Indicator.DEFAULT_COUNT;
@@ -59,6 +60,7 @@ public class AttributeController {
         indicator.setAutoVisibility(autoVisibility);
         indicator.setDynamicCount(dynamicCount);
         indicator.setCount(count);
+        indicator.setDisplayedCount(displayedCount);
 
         indicator.setSelectedPosition(position);
         indicator.setSelectingPosition(position);
@@ -66,8 +68,8 @@ public class AttributeController {
     }
 
     private void initColorAttribute(@NonNull TypedArray typedArray) {
-        int unselectedColor = typedArray.getColor(R.styleable.PageIndicatorView_piv_unselectedColor, Color.parseColor(ColorAnimation.DEFAULT_UNSELECTED_COLOR));
-        int selectedColor = typedArray.getColor(R.styleable.PageIndicatorView_piv_selectedColor, Color.parseColor(ColorAnimation.DEFAULT_SELECTED_COLOR));
+        int unselectedColor = typedArray.getColor(R.styleable.PageIndicatorView_piv_unselectedColor, Color.parseColor(BaseColorAnimation.DEFAULT_UNSELECTED_COLOR));
+        int selectedColor = typedArray.getColor(R.styleable.PageIndicatorView_piv_selectedColor, Color.parseColor(BaseColorAnimation.DEFAULT_SELECTED_COLOR));
 
         indicator.setUnselectedColor(unselectedColor);
         indicator.setSelectedColor(selectedColor);
@@ -89,12 +91,15 @@ public class AttributeController {
         boolean fadeOnIdle = typedArray.getBoolean(R.styleable.PageIndicatorView_piv_fadeOnIdle, false);
         long idleDuration = (long) typedArray.getInt(R.styleable.PageIndicatorView_piv_idleDuration, DEFAULT_IDLE_DURATION);
 
+        int maxDisplayedCount = typedArray.getInt(R.styleable.PageIndicatorView_piv_max_display_count, Indicator.COUNT_NONE);
+
         indicator.setAnimationDuration(animationDuration);
         indicator.setInteractiveAnimation(interactiveAnimation);
         indicator.setAnimationType(animationType);
         indicator.setRtlMode(rtlMode);
         indicator.setFadeOnIdle(fadeOnIdle);
         indicator.setIdleDuration(idleDuration);
+        indicator.setDisplayedCount(maxDisplayedCount);
     }
 
     private void initSizeAttribute(@NonNull TypedArray typedArray) {
@@ -163,6 +168,8 @@ public class AttributeController {
                 return AnimationType.SWAP;
             case 9:
                 return AnimationType.SCALE_DOWN;
+            case 10:
+                return AnimationType.LIMITED_NUMBER_SCALE;
         }
 
         return AnimationType.NONE;

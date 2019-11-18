@@ -2,7 +2,7 @@ package com.rd.animation.data.type;
 
 import com.rd.animation.data.Value;
 
-public class ColorAnimationValue implements Value {
+public class ColorAnimationValue extends Value {
 
     private int color;
     private int colorReverse;
